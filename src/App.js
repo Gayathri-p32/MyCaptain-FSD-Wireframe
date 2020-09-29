@@ -1,26 +1,69 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React,{useState} from 'react'
+import Axios from 'axios'
+import {v4 as uuidv4} from 'uuid'
+import "./App.css"
+import Recipe from "./components/Recipe"
+import Alert from "./components/Alert"
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const App = () => {
+    const [query, setQuery]= useState(" ");
+    const [recipes, setRecipes] = useState([]);
+    const [alert, setAlert] = useState("")
+
+    const APP_ID = "1519c069" ;
+
+    const APP_KEY = "b98e248cd47a08417bcdb3234c4eb7ae" ;
+
+    const url = `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}`;
+
+    const getData = async()=> {
+        if(query!==(" ")){
+            const result = await Axios.get(url);
+            if(!result.data.more){
+                return setAlert("No food with such Name")
+            }
+            setRecipes(result.data.hits);
+            console.log(result);
+            setAlert(" ");
+            setQuery(" ");
+        }
+        else{
+            setAlert("Please enter the recipe-name")
+        }
+    };
+    const onSubmit= (e)=> {
+        e.preventDefault();
+        getData();
+    }
+    const onChange = (e)=> {
+        setQuery(e.target.value)
+    }
+    return (
+        <div className="Food-app">
+                <div className="center">
+                    <h1 onClick={getData}>Be The Chef!</h1>
+                    <form className="search-form" onSubmit={onSubmit}>
+                        {alert!=="" && <Alert alert={alert}/>  }
+                        <input 
+                            type="text" 
+                            placeholder="Search Recipe" 
+                            autoComplete="off" 
+                            onChange={onChange}
+                            value={query}
+                        ></input>
+                        <input type="submit" value="Search"/>
+                    </form>  
+                </div>
+            <hr/>
+            <br/>
+            <div className="recipes">
+                {recipes!==[] && recipes.map((recipe) => <Recipe key={uuidv4()} recipe={recipe}/>)}
+            </div>
+        </div>
+    )
 }
 
-export default App;
+export default App
+
+
+
